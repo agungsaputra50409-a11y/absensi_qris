@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>ABSENSI QR SEKOLAH</title>
+
+  <!-- Library scanner QR dari GitHub -->
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- Library pembuat QR Code -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <?!= include('style'); ?>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <section id="loginPage" class="login-page">
+    <div class="login-card">
+
+      <div class="logo">📷</div>
+
+      <h1>ABSENSI QR</h1>
+      <p>Sistem Absensi Digital Sekolah</p>
+
+      <div class="login-form">
+
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          placeholder="Masukkan username"
+          autocomplete="username">
+
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Masukkan password"
+          autocomplete="current-password">
+
+        <button
+          type="button"
+          class="primary-btn"
+          onclick="loginApp()">
+          MASUK APLIKASI
+        </button>
+
+        <p id="loginMessage" class="message"></p>
+
+      </div>
+
+      <div class="login-footer">
+        ABSENSI QR SEKOLAH © 2026
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- APLIKASI UTAMA -->
+  <section id="appPage" class="app-page hidden">
+
+    <!-- HEADER -->
+    <header class="topbar">
+
+      <div class="brand">
+        <div class="brand-icon">📚</div>
+
+        <div>
+          <h2>ABSENSI QR SEKOLAH</h2>
+          <small id="welcomeText">Selamat datang</small>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="logout-btn"
+        onclick="logoutApp()">
+        KELUAR
+      </button>
+
+    </header>
+
+
+    <!-- MENU NAVIGASI -->
+    <nav class="nav-menu">
+
+      <button type="button"
+              onclick="showPage('dashboardPage')">
+        🏠 Dashboard
+      </button>
+
+      <button type="button"
+              onclick="showPage('scannerPage')">
+        📷 Scan QR
+      </button>
+
+      <button type="button"
+              onclick="showPage('studentPage')">
+        👨‍🎓 Data Siswa
+      </button>
+
+      <button type="button"
+              onclick="showPage('attendancePage')">
+        📋 Absensi
+      </button>
+
+    </nav>
+
+
+    <!-- KONTEN UTAMA -->
+    <main class="main-content">
+
+
+      <!-- DASHBOARD -->
+      <section id="dashboardPage" class="page">
+
+        <div class="page-heading">
+          <h2>Dashboard</h2>
+          <p>Informasi kehadiran siswa hari ini.</p>
+        </div>
+
+        <div class="date-box">
+          📅 <span id="todayDate">Memuat tanggal...</span>
+        </div>
+
+        <div class="stats">
+
+          <div class="stat-card">
+            <div class="stat-icon">👨‍🎓</div>
+            <span>Total Siswa</span>
+            <strong id="totalSiswa">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <span>Hadir</span>
+            <strong id="totalHadir">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <span>Izin</span>
+            <strong id="totalIzin">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🤒</div>
+            <span>Sakit</span>
+            <strong id="totalSakit">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <span>Alpa</span>
+            <strong id="totalAlpa">0</strong>
+          </div>
+
+        </div>
+
+        <div class="dashboard-panel">
+          <h3>Selamat Datang 👋</h3>
+
+          <p>
+            Kelola data siswa dan catat kehadiran
+            menggunakan QR Code secara digital.
+          </p>
+
+          <button
+            type="button"
+            class="primary-btn"
+            onclick="loadAll()">
+            🔄 PERBARUI DASHBOARD
+          </button>
+        </div>
+
+      </section>
+
+
+      <!-- SCAN QR -->
+      <section id="scannerPage" class="page hidden">
+
+        <div class="page-heading">
+          <h2>📷 Scan QR Siswa</h2>
+          <p>
+            Aktifkan kamera dan arahkan ke QR Code siswa.
+          </p>
+        </div>
+
+        <div class="scanner-panel">
+
+          <div class="scanner-header">
+            <span class="camera-indicator"></span>
+            PEMINDAI QR CODE
+          </div>
+
+          <!-- Area kamera -->
+          <div id="reader"></div>
+
+          <div class="scanner-actions">
+
+            <button
+              type="button"
+              class="primary-btn"
+              onclick="startScanner()">
+              📷 MULAI SCAN QR
+            </button>
+
+            <button
+              type="button"
+              class="danger-btn"
+              onclick="stopScanner()">
+              ⏹ MATIKAN KAMERA
+            </button>
+
+          </div>
+
+          <p id="cameraMessage" class="message">
+            Tekan MULAI SCAN QR untuk mengaktifkan kamera.
+          </p>
+
+        </div>
+
+        <!-- Hasil scan -->
+        <div id="scanResult" class="result-card hidden"></div>
+
+      </section>
+
+
+      <!-- DATA SISWA -->
+      <section id="studentPage" class="page hidden">
+
+        <div class="page-heading">
+          <h2>👨‍🎓 Data Siswa</h2>
+          <p>Tambah siswa dan buat QR Code secara otomatis.</p>
+        </div>
+
+        <!-- FORM SISWA -->
+        <div class="form-card">
+
+          <h3>Formulir Data Siswa</h3>
+
+          <input type="hidden" id="studentId">
+
+          <label for="nis">NIS</label>
+          <input
+            type="text"
+            id="nis"
+            placeholder="Masukkan NIS">
+
+          <label for="nisn">NISN</label>
+          <input
+            type="text"
+            id="nisn"
+            placeholder="Masukkan NISN">
+
+          <label for="nama">Nama Lengkap</label>
+          <input
+            type="text"
+            id="nama"
+            placeholder="Masukkan nama siswa">
+
+          <label for="jk">Jenis Kelamin</label>
+          <select id="jk">
+            <option value="">Pilih jenis kelamin</option>
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+
+          <label for="kelas">Kelas</label>
+          <input
+            type="text"
+            id="kelas"
+            placeholder="Contoh: X IPA 1">
+
+          <label for="noHp">Nomor HP</label>
+          <input
+            type="text"
+            id="noHp"
+            placeholder="Masukkan nomor HP">
+
+          <label for="alamat">Alamat</label>
+          <textarea
+            id="alamat"
+            placeholder="Masukkan alamat siswa"></textarea>
+
+          <label for="status">Status Siswa</label>
+          <select id="status">
+            <option value="Aktif">Aktif</option>
+            <option value="Nonaktif">Nonaktif</option>
+          </select>
+
+          <button
+            type="button"
+            class="primary-btn"
+            onclick="saveStudentData()">
+            💾 SIMPAN DATA SISWA
+          </button>
+
+          <button
+            type="button"
+            class="secondary-btn"
+            onclick="clearStudentForm()">
+            RESET FORMULIR
+          </button>
+
+        </div>
+
+
+        <!-- DAFTAR SISWA -->
+        <div class="list-heading">
+          <h3>Daftar Siswa dan QR Code</h3>
+          <span id="studentCount">0 Siswa</span>
+        </div>
+
+        <div id="studentList" class="student-list">
+          <p>Memuat data siswa...</p>
+        </div>
+
+      </section>
+
+
+      <!-- RIWAYAT ABSENSI -->
+      <section id="attendancePage" class="page hidden">
+
+        <div class="page-heading">
+          <h2>📋 Riwayat Absensi</h2>
+          <p>Daftar kehadiran siswa hari ini.</p>
+        </div>
+
+        <button
+          type="button"
+          class="primary-btn"
+          onclick="loadAttendance()">
+          🔄 PERBARUI ABSENSI
+        </button>
+
+        <div id="attendanceList">
+          <p>Memuat riwayat absensi...</p>
+        </div>
+
+      </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <strong>ABSENSI QR SEKOLAH</strong>
+      <small>Sistem Absensi Digital Berbasis QR Code</small>
+    </footer>
+
+  </section>
+
+
+  <!-- JAVASCRIPT -->
+  <?!= include('javascript'); ?>
+
+</body>
+</html>
